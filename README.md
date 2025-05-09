@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔍 Sitecore XM Cloud to Search: Incremental Update Middleware
 
-## Getting Started
+This project is a **complimentary implementation** to the official Sitecore Cookbook recipe:  
+[Search Incremental Updates on Sitecore XM Cloud](https://developers.sitecore.com/learn/accelerate/xm-cloud/implementation/sitecore-search/search-incremental-updates)
 
-First, run the development server:
+## 🚀 Purpose
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The goal is to accelerate developer implementation by providing a working example for sending **incremental content updates** from **Sitecore XM Cloud** to **Sitecore Search**.  
+The codebase is written in **TypeScript**, built with **Next.js**, and is fully customizable.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Webhook (Batch)**  
+   - Receives `OnUpdate` events from **Sitecore Experience Edge**
+   - Filters layout-specific item identifiers
+   - Groups updates using **Upstash KV** under unique `invocation_id` keys
+   - Sets **TTL** for automatic cleanup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Webhook (Rebuild)**  
+   - Triggered after publishing is complete (`OnEnd`)
+   - Processes items from the queue
+   - Queries content using **Experience Edge GraphQL**
+   - Extracts and validates data
+   - Transforms and sends documents to **Sitecore Search Ingestion API**
 
-## Learn More
+## 🧠 How It Works
 
-To learn more about Next.js, take a look at the following resources:
+When content is published in XM Cloud:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. It is first published to **Experience Edge**.
+2. This triggers a webhook (`batch`) to store relevant item updates in Upstash.
+3. After publishing is completed, a second webhook (`rebuild`) processes those items.
+4. The final output is a near real-time update of content in **Sitecore Search**, without waiting for scheduled crawler jobs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📦 Benefits
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Real-time content sync to Sitecore Search
+- Fully serverless deployment (via Vercel)
+- Easy to extend and integrate with custom logic or data sources
