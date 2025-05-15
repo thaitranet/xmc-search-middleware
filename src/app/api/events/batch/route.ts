@@ -16,17 +16,22 @@ export async function POST(req: NextRequest) {
 
   console.log(body);
 
-  const updateIds = updates
+  // Filter and map updates with operations
+  const updateItems = updates
     .filter((u: any) => u.identifier?.endsWith('-layout'))
-    .map((u: any) => u.identifier.replace('-layout', ''));
+    .map((u: any) => {
+      const id = u.identifier.replace('-layout', '');
+      const operation = u.operation == 'Delete' ? 'delete' : 'update'; // Assuming `deleted` flag indicates a delete
+      return JSON.stringify({ id, operation });
+    });
 
-  if (updateIds.length > 0) {
-    // Add the updates to the queue
-    await kv.lpush(key, ...updateIds);
+  if (updateItems.length > 0) {
+    // Add structured updates to the queue
+    await kv.lpush(key, ...updateItems);
 
-    // Set expiration time for the list without overwriting its value
+    // Set expiration for the Redis key
     await kv.expire(key, EXPIRATION_TIME);
   }
 
-  return NextResponse.json({ success: true, queued: updateIds.length });
+  return NextResponse.json({ success: true, queued: updateItems.length });
 }
